@@ -8,6 +8,7 @@
 	export let cellX;
 	export let cellY;
 	export let candidates;
+	export let explore;
 
 	export let disabled;
 	export let conflictingNumber;
@@ -15,6 +16,9 @@
 	export let selected;
 	export let sameArea;
 	export let sameNumber;
+	export let strategyCell;
+	export let relativeCell;
+	export let invalidCandidate;
 
 	const borderRight = (cellX !== SUDOKU_SIZE && cellX % 3 !== 0);
 	const borderRightBold = (cellX !== SUDOKU_SIZE && cellX % 3 === 0);
@@ -34,16 +38,21 @@
 		     class:selected={selected}
 		     class:same-area={sameArea}
 		     class:same-number={sameNumber}
-		     class:conflicting-number={conflictingNumber}>
-
+		     class:conflicting-number={conflictingNumber}
+		     class:strategy-cell={strategyCell}
+		     class:relative-cell={relativeCell}
+		     class:invalid-candidate={invalidCandidate}>
 			<button class="cell-btn" on:click={cursor.set(cellX - 1, cellY - 1)}>
-				{#if candidates}
+				{#if candidates && Array.isArray(candidates) && candidates.length > 1 && (strategyCell || relativeCell)}
 					<Candidates {candidates} />
+				{:else if candidates && Array.isArray(candidates) && candidates.length === 1 && relativeCell}
+					<span class="cell-text">{candidates[0]}</span>
+				{:else if candidates && Array.isArray(candidates) && candidates.length === 0 && strategyCell}
+					<span class="cell-text">0</span>
 				{:else}
-					<span class="cell-text">{value || ''}</span>
+					<span class="cell-text">{explore || value || ''}</span>
 				{/if}
 			</button>
-
 		</div>
 	{/if}
 
@@ -117,6 +126,18 @@
 	}
 
 	.conflicting-number {
+		@apply text-red-600;
+	}
+
+	.strategy-cell {
+		@apply bg-green-400 text-green-200;
+	}
+
+	.relative-cell {
+		@apply bg-blue-600 text-white;
+	}
+
+	.invalid-candidate {
 		@apply text-red-600;
 	}
 </style>

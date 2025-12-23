@@ -1,0 +1,98 @@
+一. 导入功能实现（将 Sudoku Wiki 题目页 URL 作为 sencode 直接导入到数独乐乐中使用）
+具体修改如下：
+
+    1. 修改了 decodeSencode 函数 
+    （位于 src/node_modules/@sudoku/sencode/index.js:57 ）：
+        - 添加了对 Sudoku Wiki URL 格式的检测
+        - 从 URL 中提取 bd 参数值
+        - 将 URL 中的点号 . 替换为数字 0
+        - 将 bd 参数值转换为 9x9 数独网格
+        - 保留了原有的 sencode 解码逻辑，确保向后兼容
+    2. 修改了 validateSencode 函数 
+    （位于 src/node_modules/@sudoku/sencode/index.js:139 ）：
+        - 添加了对 Sudoku Wiki URL 格式的验证
+        - 保留了原有的 sencode 验证逻辑，确保向后兼容
+    现在，数独乐乐可以直接接受以下两种格式的 Sudoku Wiki URL 作为 sencode 导入：
+    - 完整格式： https://www.sudokuwiki.org/sudoku.htm?bd=580009000020000006300060200008040000071592340000080900003010002400000010000800039
+    - 简写格式： https://www.sudokuwiki.org/sudoku.htm?bd=58...9....2......63...6.2....8.4.....7159234.....8.9....3.1...24......1....8...39
+
+
+二. 提示算法策略功能实现
+
+将参考项目中的strategy模块完整迁移到当前项目中，实现了四个策略的提示功能以及相关逻辑。策略应用采用按优先级依次尝试的方式，每次点击提示按钮只产生一个提示数字，如果低复杂度的策略已经得到了结果会直接返回，不会再运行复杂度高的策略。
+
+具体修改如下：
+
+1. 创建strategy模块（src/node_modules/@sudoku/strategy/）：
+   - baseStrategy.js: 创建策略基类，定义策略接口规范（preCondition、apply、strategyDescription方法）
+   - strategyManager.js: 创建策略管理器，负责管理所有策略并按优先级顺序应用。实现策略应用的逻辑：
+     * 按优先级顺序（1→2→3→4）依次尝试策略
+     * 对每个策略，先检查preCondition是否满足
+     * 如果满足条件，应用该策略
+     * 检查应用策略后是否有单元格的候选数变成了1（产生了确定的结果）
+     * 只取第一个产生单个候选数的单元格作为提示数字
+     * 如果产生了单个候选数的结果，立即返回，不再尝试更高复杂度的策略
+     * 如果没有产生确定结果，继续尝试下一个策略
+   - hiddenSingleStrategy.js: 实现隐藏单数策略（优先级1），当某个数字在某行、某列或某宫中只能出现在一个位置时应用
+   - nakedPairsStrategy.js: 实现裸双数策略（优先级2），当同一行、列或宫中的两个单元格都只有相同的两个候选数时应用
+   - pointingPairsStrategy.js: 实现指向对策略（优先级3），当某个数字在宫内的候选位置都在同一行或同一列时应用
+   - hiddenCandidatesStrategy.js: 实现隐藏对数策略（优先级4），在宫中当两个数字只出现在两个单元格中时应用
+
+2. 创建cell.js（src/node_modules/@sudoku/stores/cell.js）：
+   - CreateCurrentTimeStepCell函数：创建当前时间步的单元格状态
+   - CreateCellLinkedList函数：创建单元格链表结构，用于策略网格中存储单元格的状态和历史信息
+   - 实现了isCellConstant、isUserCell、getCurrentCell、getStrategies、resetStrategies、getRelativePos、resetRelativePos、validate、add、branchBack等方法
+
+3. 修改grid.js（src/node_modules/@sudoku/stores/grid.js）：
+   - 导入CreateCellLinkedList和get函数
+   - 添加createStrategyGrid函数，创建策略网格用于存储和管理策略相关的单元格状态
+   - 实现了strategyGrid的subscribe、set、setCurrentCell、increaseTimeStep、setTimeStep、getTimeStep、getStrategyGrid、updateCellCandidates等方法
+   - 导出strategyGrid供其他模块使用
+
+4. 修改Actions.svelte（src/components/Controls/ActionBar/Actions.svelte）：
+   - 导入strategyGrid、strategyManager和get函数
+   - 修改handleHint函数，使用策略管理器来应用策略：
+     * 增加时间步
+     * 应用策略管理器获取策略应用的单元格（只包含产生提示的单元格）
+     * 更新策略网格的单元格状态
+     * 更新候选数
+     * 根据策略应用结果更新策略管理器状态和提示次数
+
+5. 修改Keyboard.svelte（src/components/Controls/Keyboard.svelte）：
+   - 导入strategyGrid、strategyManager和get函数
+   - 修改handleKeyButton函数，在用户输入数字时：
+     * 检查是否正在使用策略，如果是则重置策略状态
+     * 增加策略网格的时间步
+     * 重置所有单元格的相对位置和策略
+     * 设置策略网格中当前位置的值
+     * 更新候选数
+
+6. 修改Board/index.svelte（src/components/Board/index.svelte）：
+   - 导入SUDOKU_SIZE、strategyGrid、strategyManager
+   - 添加$isUsingStrategy响应式变量
+   - 添加isStrategyCell函数：判断单元格是否为策略单元格
+   - 添加isRelativeCell函数：判断单元格是否为相关单元格
+   - 添加isInValidateCandidate函数：判断候选数是否无效
+   - 修改Cell组件调用，传递strategyGrid的candidates、explore、strategyCell、relativeCell、invalidCandidate等props
+   - 修改conflictingNumber的计算逻辑，使用strategyGrid的explore值
+
+7. 修改Cell.svelte（src/components/Board/Cell.svelte）：
+   - 添加explore、strategyCell、relativeCell、invalidCandidate等props
+   - 修改单元格内容显示逻辑：
+     * 当candidates是数组且长度>1且为策略单元格或相关单元格时，显示候选数网格
+     * 当candidates长度为1且为相关单元格时，显示候选数
+     * 当candidates长度为0且为策略单元格时，显示0
+     * 其他情况显示explore或value
+   - 添加strategy-cell、relative-cell、invalid-candidate样式类，用于高亮显示策略单元格、相关单元格和无效候选数
+
+8. 创建StrategyDescription.svelte（src/components/Controls/ActionBar/StrategyDescription.svelte）：
+   - 显示当前选中策略单元格的策略描述信息
+   - 当单元格有多个策略时，使用" + "连接显示
+   - 添加样式美化策略描述文本
+
+9. 修改ActionBar/index.svelte（src/components/Controls/ActionBar/index.svelte）：
+   - 导入StrategyDescription组件
+   - 在Actions下方添加StrategyDescription组件显示策略描述
+   - 添加action-section样式类来组织布局
+
+

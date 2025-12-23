@@ -1,8 +1,10 @@
 <script>
-	import { userGrid } from '@sudoku/stores/grid';
+	import { userGrid, strategyGrid } from '@sudoku/stores/grid';
 	import { cursor } from '@sudoku/stores/cursor';
 	import { notes } from '@sudoku/stores/notes';
 	import { candidates } from '@sudoku/stores/candidates';
+	import { strategyManager } from '@sudoku/strategy/strategyManager';
+	import { get } from 'svelte/store';
 
 	// TODO: Improve keyboardDisabled
 	import { keyboardDisabled } from '@sudoku/stores/keyboard';
@@ -21,7 +23,20 @@
 					candidates.clear($cursor);
 				}
 
-				userGrid.set($cursor, num);
+				// 更新策略管理器状态
+				if (get(strategyManager.getIsUsingStrategy())) {
+					// 如果正在使用策略，用户输入会重置策略状态
+					strategyManager.getIsUsingStrategy().set(false);
+				}
+
+				// 更新策略网格状态
+				strategyGrid.increaseTimeStep();
+				get(strategyGrid.getStrategyGrid()).map(row => row.map(cell => { 
+					cell.resetRelativePos(); 
+					cell.resetStrategies(); 
+				}));
+				strategyGrid.set(get(cursor), num);
+				strategyGrid.updateCellCandidates([get(cursor)]);
 			}
 		}
 	}
