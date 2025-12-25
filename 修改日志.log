@@ -96,3 +96,20 @@
    - 添加action-section样式类来组织布局
 
 
+
+三. 提示功能修复
+
+修复了点击提示后，除了唯一可能的单元格外，还有一些有多个候选格的单元格也显示绿色的问题。
+
+具体修改如下：
+
+1. 修改hiddenSingleStrategy.js（src/node_modules/@sudoku/strategy/hiddenSingleStrategy.js）：
+   - 简化了updateRelativePositions方法，移除了不必要的策略合并逻辑
+   - 只保留了相关位置记录功能，确保只有真正相关的单元格才会被关联
+
+2. 修改Board/index.svelte（src/components/Board/index.svelte）：
+   - 更新了isStrategyCell函数，增加了候选数长度为1的条件判断
+   - 确保只有通过策略确定了唯一候选数的单元格才会显示为绿色
+
+修改后，点击提示按钮时，只有那些通过策略确定了唯一候选数的单元格才会显示为绿色，符合预期的提示功能。
+

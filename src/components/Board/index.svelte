@@ -36,7 +36,8 @@
 		return isUsingStrategy &&
 			strategyGridStore[y][x].isUserCell() &&
 			strategyGridStore[y][x].strategies != null &&
-			strategyGridStore[y][x].strategies.length > 0;
+			strategyGridStore[y][x].strategies.length > 0 &&
+			strategyGridStore[y][x].candidates.length === 1;
 	}
 
 	function isRelativeCell(isUsingStrategy, strategyGridStore, cursorStore, y, x) {
