@@ -4,6 +4,7 @@
 	import { notes } from '@sudoku/stores/notes';
 	import { candidates } from '@sudoku/stores/candidates';
 	import { strategyManager } from '@sudoku/strategy/strategyManager';
+	import { historyManager } from '@sudoku/stores/history/history';
 	import { get } from 'svelte/store';
 
 	// TODO: Improve keyboardDisabled
@@ -29,14 +30,15 @@
 					strategyManager.getIsUsingStrategy().set(false);
 				}
 
-				// 更新策略网格状态
-				strategyGrid.increaseTimeStep();
-				get(strategyGrid.getStrategyGrid()).map(row => row.map(cell => { 
-					cell.resetRelativePos(); 
-					cell.resetStrategies(); 
-				}));
-				strategyGrid.set(get(cursor), num);
-				strategyGrid.updateCellCandidates([get(cursor)]);
+				// 使用命令执行+记录，确保全盘时间步快照一致
+				const prevTimeStep = get(strategyGrid.getTimeStep());
+				const action = historyManager.createFillAction({
+					timeStepBefore: prevTimeStep,
+					pos: get(cursor),
+					value: num,
+				});
+				action.apply();
+				historyManager.recordAction(action);
 			}
 		}
 	}
