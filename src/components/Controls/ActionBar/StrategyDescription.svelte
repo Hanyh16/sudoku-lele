@@ -10,7 +10,8 @@
 		return isUsingStrategy &&
 			strategyGridStore[cursorStore.y][cursorStore.x].isUserCell() &&
 			strategyGridStore[cursorStore.y][cursorStore.x].strategies != null &&
-			strategyGridStore[cursorStore.y][cursorStore.x].strategies.length > 0;
+			strategyGridStore[cursorStore.y][cursorStore.x].strategies.length > 0 &&
+			strategyManager.isPositionInLastApplied(cursorStore.y, cursorStore.x);
 	}
 </script>
 

@@ -114,6 +114,7 @@
 修改后，点击提示按钮时，只有那些通过策略确定了唯一候选数的单元格才会显示为绿色，符合预期的提示功能。
 
 
+
 四、探索回溯功能实现
 实现回溯，撤销和重做功能，
 其中回溯功能会回溯到上一次提示产生多候选数的状态，
@@ -153,4 +154,8 @@
      * 通过historyManager记录用户输入数字的动作
 
 
+五、提示功能优化
 
+1. 增加兜底策略，可以产生多分支的策略，便于回溯使用（src/node_modules/@sudoku/strategy/strategyManager.js）：
+2. 优化策略格判断逻辑，可以识别多分支策略 （src/components/Board/index.svelte）（src/components/Controls/ActionBar/StrategyDescription.svelte）：
+3. 同步多分支的策略探索回溯（src/node_modules/@sudoku/stores/history/commends.js）：

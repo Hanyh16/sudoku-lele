@@ -33,11 +33,12 @@
 
 	function isStrategyCell(isUsingStrategy, strategyGridStore, y, x) {
 		if (x === null || y === null) return false;
-		return isUsingStrategy &&
-			strategyGridStore[y][x].isUserCell() &&
-			strategyGridStore[y][x].strategies != null &&
-			strategyGridStore[y][x].strategies.length > 0 &&
-			strategyGridStore[y][x].candidates.length === 1;
+			// 仅当该格在最近一次策略应用的受影响位置中，才视为策略格
+			return isUsingStrategy &&
+				strategyGridStore[y][x].isUserCell() &&
+				strategyGridStore[y][x].strategies != null &&
+				strategyGridStore[y][x].strategies.length > 0 &&
+				strategyManager.isPositionInLastApplied(y, x);
 	}
 
 	function isRelativeCell(isUsingStrategy, strategyGridStore, cursorStore, y, x) {
