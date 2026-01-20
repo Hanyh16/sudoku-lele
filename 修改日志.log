@@ -13,7 +13,7 @@
         - 添加了对 Sudoku Wiki URL 格式的验证
         - 保留了原有的 sencode 验证逻辑，确保向后兼容
     现在，数独乐乐可以直接接受以下两种格式的 Sudoku Wiki URL 作为 sencode 导入：
-    - 完整格式： https://www.sudokuwiki.org/sudoku.htm?bd=580009000020000006300060200008040000071592340000080900003010002400000010000800039
+    - 完整格式：  80009000020000006300060200008040000071592340000080900003010002400000010000800039
     - 简写格式： https://www.sudokuwiki.org/sudoku.htm?bd=58...9....2......63...6.2....8.4.....7159234.....8.9....3.1...24......1....8...39
 
 
@@ -159,3 +159,13 @@
 1. 增加兜底策略，可以产生多分支的策略，便于回溯使用（src/node_modules/@sudoku/strategy/strategyManager.js）：
 2. 优化策略格判断逻辑，可以识别多分支策略 （src/components/Board/index.svelte）（src/components/Controls/ActionBar/StrategyDescription.svelte）：
 3. 同步多分支的策略探索回溯（src/node_modules/@sudoku/stores/history/commends.js）：
+测试链接：
+
+Naked tripple test :
+https://www.sudokuwiki.org/sudoku.htm?bd=070408029002000004854020007008374200020000000003261700000093612200000403130642070
+
+Naked quad test :
+https://www.sudokuwiki.org/sudoku.htm?bd=000030086000020040090078520371856294900142375400397618200703859039205467700904132
+
+Bug Strategy test : 
+https://www.sudokuwiki.org/sudoku.htm?bd=174832596593461278682957001067500900019703605435096807301600759908075060756309082
