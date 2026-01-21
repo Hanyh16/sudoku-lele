@@ -37,8 +37,10 @@
 					pos: get(cursor),
 					value: num,
 				});
-				action.apply();
-				historyManager.recordAction(action);
+				const ok = action.apply();
+				if (ok) {
+					historyManager.recordAction(action);
+				}
 			}
 		}
 	}

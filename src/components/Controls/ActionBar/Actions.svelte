@@ -14,11 +14,17 @@
 	// 订阅时间步与分支次数与撤销重做计数，用于按钮禁用状态
 	const timeStepStore = strategyGrid.getTimeStep();
 	const branchBackTimesStore = historyManager.getBranchBackTimes();
-	const undoCountStore = historyManager.getUndoCount();
-	const redoCountStore = historyManager.getRedoCount();
-	$: canUndo = $undoCountStore > 0;
-	$: canBacktrack = $branchBackTimesStore > 0;
-	$: canRedo = $redoCountStore > 0;
+	const canUndoStore = historyManager.getCanUndo();
+	const canRedoStore = historyManager.getCanRedo();
+	const canBacktrackStore = historyManager.getCanBacktrack();
+
+	$: canUndo = $canUndoStore;
+	$: canRedo = $canRedoStore;
+	$: canBacktrack = $canBacktrackStore;
+
+	// 调试：打印这三个 store 的当前值以及解析后的布尔值，便于排查按钮禁用逻辑
+	$: console.debug('[Actions] $canUndoStore, $canRedoStore, $canBacktrackStore ->', $canUndoStore, $canRedoStore, $canBacktrackStore);
+	$: console.debug('[Actions] resolved booleans ->', { canUndo, canRedo, canBacktrack });
 
 	$: hintsAvailable = $hints > 0;
 	// $: hintsAvailable = true;

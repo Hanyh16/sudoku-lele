@@ -6,6 +6,9 @@
 	import { difficulty } from '@sudoku/stores/difficulty';
 	import { usedHints } from '@sudoku/stores/hints';
 
+	export let data = {};
+	export let hideModal;
+
 	const gameOverCelebration = GAME_OVER_CELEBRATIONS[Math.floor(Math.random() * GAME_OVER_CELEBRATIONS.length)];
 
 	function handleShare() {
